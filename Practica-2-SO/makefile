@@ -5,7 +5,7 @@ client: client.c server
 server: server.c conversor
 	gcc server.c -o server
 
-conversor: conversor.c conversor
+conversor: conversor.c 
 	gcc conversor.c -o conversor
 
 clean:
