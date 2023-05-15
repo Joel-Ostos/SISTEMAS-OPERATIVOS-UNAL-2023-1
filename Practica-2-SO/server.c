@@ -41,8 +41,8 @@ fclose(file);
     bzero(buffer, 256);
     sprintf(buffer, "%f", mean_travel_time);
     n = write(socket, buffer, strlen(buffer));
-    if (n < 0) {
-        perror("ERROR writing to socket");
+    if (n == -1) {
+        perror("Error escribiendo en el socket");
         exit(1);
     }
 }
