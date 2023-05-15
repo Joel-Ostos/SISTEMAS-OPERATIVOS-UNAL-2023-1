@@ -54,32 +54,42 @@ int main(int argc, char *argv[]){
       }
 
       server_direccion.sin_family = AF_INET;
+
       bcopy((char *) server->h_addr, (char *) &server_direccion.sin_addr.s_addr, server->h_length);
+
       server_direccion.sin_port = htons(numero_puerto);
       
+
       if (connect(socketfd, (struct sockaddr *)&server_direccion, sizeof(server_direccion)) < 0){
         printf("No se logro conectar con el servidor");
         exit(1);
       }
 
-      bzero(buffer, 256);
       sprintf(buffer, "%d,%d,%d", origin, destination, hod);
+
       int n = write(socketfd, buffer, strlen(buffer));
+
       if (n < 0) {
-          perror("ERROR writing to socket");
-          exit(1);
-      }
+	perror("No se pudo escribir en el socket");
+	exit(1);
+      } 
 
       bzero(buffer, 256);
       n = read(socketfd, buffer, 255);
       if (n < 0) {
-          perror("ERROR reading from socket");
+          perror("No se pudo leer desde el socket");
           exit(1);
       }
 
       float result;
       sscanf(buffer, "%f", &result);
-      printf("Received result: %f\n", result);
+      
+      if (result < 0){
+	printf("Tiempo medio no encontrado\n"); 
+      }else {
+	printf("Resultado de la busqueda: %f\n", result);
+      }
+
 
       close(socketfd);
     } else if (option == 5) {

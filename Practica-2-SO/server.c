@@ -16,15 +16,15 @@ typedef struct {
 
 void busqueda(int socket) {
 
-float result;
 FILE *file = fopen("prueba.bin", "rb");
 char buffer[256];
 
 TravelData data;
-bzero(buffer, 256);
+/* bzero(buffer, 256); */
 int n = read(socket, buffer, 256);
 int hod,dstid,sourceid;
 float mean_travel_time;
+
 sscanf(buffer, "%d,%d,%d", &sourceid,&dstid,&hod);
 
 while (fread(&data, sizeof(data), 1, file)){
@@ -54,8 +54,9 @@ int main(int argc, char *argv[]){
 
   int numero_puerto = atoi(argv[1]);
   // argc nos indica la cantidad de parametros que se pasan por terminal, si la cantidad es menor a 2 significa que el puerto no sé especificó
-  if (argc < 2){
+  if (argc == 0){
     printf("No se especificó el puerto");
+    exit(1);
   }
 
   // Creación del Socket
@@ -83,12 +84,12 @@ int main(int argc, char *argv[]){
   while (1) {
     socket_cliente = accept(socketfd, (struct sockaddr *) &cliente_direccion, &tamano_cliente);
 
-    if (socket_cliente < 0) {
+    if (socket_cliente == -1) {
       perror("Error al aceptar al cliente");
       exit(1);
     }
     pid = fork();
-    if (pid < 0) {
+    if (pid == -1) {
       perror("No se logro hacer fork");
       exit(1);
     }
