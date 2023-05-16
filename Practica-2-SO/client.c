@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
       
 
       if (connect(socketfd, (struct sockaddr *)&server_direccion, sizeof(server_direccion)) < 0){
-        printf("No se logro conectar con el servidor");
+        printf("No se logró conectar con el servidor");
         exit(1);
       }
 

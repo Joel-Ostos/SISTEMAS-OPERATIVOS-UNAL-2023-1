@@ -20,7 +20,7 @@ FILE *file = fopen("prueba.bin", "rb");
 char buffer[256];
 
 TravelData data;
-/* bzero(buffer, 256); */
+
 int n = read(socket, buffer, 256);
 int hod,dstid,sourceid;
 float mean_travel_time;
