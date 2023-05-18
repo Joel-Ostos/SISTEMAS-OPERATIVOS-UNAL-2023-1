@@ -1,0 +1,58 @@
+\begin{thebibliography}{10}
+
+\bibitem{man7accept}
+accept(2) linux programmer's manual.
+\newblock \url{https://man7.org/linux/man-pages/man2/accept.2.html}.
+\newblock Accessed: 2023-05-17.
+
+\bibitem{man7bind}
+bind(2) linux programmer's manual.
+\newblock \url{https://man7.org/linux/man-pages/man2/bind.2.html}.
+\newblock Accessed: 2023-05-17.
+
+\bibitem{man7bzero}
+bzero(3) linux programmer's manual.
+\newblock \url{https://man7.org/linux/man-pages/man2/bzero.3.html}.
+\newblock Accessed: 2023-05-17.
+
+\bibitem{man7fork}
+fork(2) linux programmer's manual.
+\newblock \url{https://man7.org/linux/man-pages/man2/fork.2.html}.
+\newblock Accessed: 2023-05-17.
+
+\bibitem{man7fread}
+fread(3) linux programmer's manual.
+\newblock \url{https://man7.org/linux/man-pages/man2/fread.3.html}.
+\newblock Accessed: 2023-05-17.
+
+\bibitem{manual}
+The gnu c library reference manual.
+\newblock \url{https://www.gnu.org/software/libc/manual/pdf/libc.pdf}.
+\newblock Accessed: 2023-05-17.
+
+\bibitem{man7ip}
+ip(7) linux programmer's manual.
+\newblock \url{https://man7.org/linux/man-pages/man7/ip.7.html}.
+\newblock Accessed: 2023-05-17.
+
+\bibitem{man7read}
+read(2) linux programmer's manual.
+\newblock \url{https://man7.org/linux/man-pages/man2/read.2.html}.
+\newblock Accessed: 2023-05-17.
+
+\bibitem{man7socket}
+Socket(2) linux programmer's manual.
+\newblock \url{https://man7.org/linux/man-pages/man2/socket.2.html}.
+\newblock Accessed: 2023-05-17.
+
+\bibitem{man7sprintf}
+sprintf(3p) linux programmer's manual.
+\newblock \url{https://man7.org/linux/man-pages/man3/sprintf.3p.html}.
+\newblock Accessed: 2023-05-17.
+
+\bibitem{man7sscanf}
+sscanf(3p) linux programmer's manual.
+\newblock \url{https://man7.org/linux/man-pages/man3/sscanf.3p.html}.
+\newblock Accessed: 2023-05-17.
+
+\end{thebibliography}

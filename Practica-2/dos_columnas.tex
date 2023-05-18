@@ -1,0 +1,272 @@
+% --------------------------------------------------------------------------
+\documentclass{article}
+\usepackage{spconf,amsmath,graphicx,listings,xcolor,hyperref}
+% \bibliography{bibliografia} 
+% Example definitions.
+% --------------------
+\def\x{{\mathbf x}}
+\def\L{{\cal L}}
+% Title.
+% ------
+\title{Segunda Practica Sistemas Operativos}
+%
+% Single address.
+% ---------------
+\name{Eduard Joel Ostos Castro\thanks{eostos@unal.edu.co}}
+% \name{Tania Julieth Araque Dueñas}
+% \name{Andres Felipe Sanchez Ladino\thanks{eostos@unal.edu.co}}
+\address{Estudiante}
+
+\begin{document}
+%\ninept
+%
+\maketitle
+%
+% \begin{abstract}
+% \lipsum[3-5]
+% \end{abstract}
+\lstset{
+  backgroundcolor=\color{lightgray},   % choose the background color
+  basicstyle=\footnotesize,             % size of fonts used for the code
+  breaklines=true,                      % automatic line breaking only at whitespace
+  captionpos=b,                         % sets the caption-position to bottom
+  tabsize=2                             % sets default tabsize to 2 spaces
+}
+
+\section{Elaboración del Servidor}
+Para la elaboración del servidor, o más bien, puesta en funcionamiento de este, primero crearemos un archivo server.c
+veasé el archivo contenido en el repositorio de github, ahora bien, debemos tener en cuenta las librerias que debemos usar para poder acceder a la red y a los sockets:
+\begin{lstlisting}[language=C]
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <string.h>
+\end{lstlisting}
+Entonces, las librerias más importantes para este programa son socket.h e in.h puesto que nos proveen las funciones necesarias para crear sockets y conectarnos a internet.\\
+Ahora vamos con el código, el esquema que se usa para crear este tipo de aplicaciones es el siguiente.\\ 
+1. Crear un socket.\\
+2. Hacer bind al socket para darle una dirección IP.\\
+3. Luego recibir una conexión, con accept\\ 
+4. Mandar esa conexión a ejecutar lo que se desea.\\ 
+5. Devolver la conexión.\\
+Ahora ahondaremos más en detalles, entonces, para (1), usaremos la función dada por socket: 
+\begin{lstlisting}[language=C]
+socketfd = socket(AF_INET, SOCK_STREAM, 0);
+\end{lstlisting}
+
+socket\cite{man7socket} tiene varios 3 parametros:
+
+\begin{lstlisting}[language=C]
+socket(int domain, int type, int protocol);
+\end{lstlisting}
+
+Ahora, como dicta el manual de referencia de la librería de C\cite{manual}, la creación de un socket no lo asigna de manera automatica a una dirección, esta asignación debe hacerse de manera manual, con una estructura llamada sockaddr que en nuestro programa es llamado server\_direccion, ahora la conexión se hizo así, por medio de bind\cite{man7bind}:
+
+\begin{lstlisting}[language=C]
+bind(socketfd, (struct sockaddr *) &server_direccion, sizeof(server_direccion))
+\end{lstlisting}
+
+
+Entonces, en esa linea de codigo hacemos bind, entonces tiene 3 parametros, el primero, el socket al que le asignaremos la dirección, segundo la estructura sockaddr, que si vemos, hicimos un casting, porque así estaba la variable server\_direccion antes:
+
+
+\begin{lstlisting}[language=C]
+struct sockaddr_in server_direccion;
+\end{lstlisting}
+
+
+A la cual antes de hacer el bind le cambiamos unos parametros, así:
+
+
+\begin{lstlisting}[language=C]
+server_direccion.sin_port = htons(numero_puerto);
+server_direccion.sin_family = AF_INET;
+server_direccion.sin_addr.s_addr = INADDR_ANY;
+\end{lstlisting}
+
+
+Viendo sin\_port lo que hace es asignar a la estructura un puerto, el cual se da al iniciar el programa, entonces, ese número de puerto es asignado a la estructura. En la segunda línea modificamos sin\_family para darle el valor de AF\_INET, coonsultando de nuevo en el manual de C podemos darnos cuenta que AF\_INET\cite{man7ip} es la palabra reservada para el protocolo de internet IPv4; Ahora la tercera línea, sin\_add.s\_addr la modificamos para darle una dirección a nuestra estructura, INADDR\_ANY indica cualquiera, sin embargo, esta dirección es escogida por el equipo donde se ejecute el programa.\\ 
+Retomando el bind, una vez hecho el bind a nuestro socket ahora podemos decir que nuestro socket está completo y lo que nos sigue es hacer listen en el socket, así:
+
+
+\begin{lstlisting}[language=C]
+listen(socketfd, 5);
+\end{lstlisting}
+
+Donde 5 es el máximo número de conexiones que recibiremos.
+Ahora bien, para manejar toda esta cantidad de conexiones sin que luego de una respuesta del servidor se muera lo que haremos es usar fork(), una función de C que permite crear multiples procesos y ejecutarlos al mismo tiempo, por lo tanto no habrá ningún fallo en nuestro programa.
+Una vez logrado esto, si la conexión es satisfactoría llameremos a la función busqueda, que recibirá un socket, el cual es un socket que aceptamos, así:
+\begin{lstlisting}[language=C]
+socket_cliente = accept(socketfd, (struct sockaddr *) &cliente_direccion, &tamano_cliente);
+\end{lstlisting}
+Con esta línea de codigo hacemos lo anteriormente mencionado, aceptamos un socket cliente, entonces, una vez aceptado podremos acceder a los mismos metodos de un socket normal.
+En nuestra función busqueda, una vez recibido nuestro socket, abriremos el archivo en el que queremos hacer la busqueda, luego creamos un buffer que será de tipo de dato char, puesto que por medio de este será posible la lectura y escritura de los datos necesarios, ya lo veremos más adelante.
+
+
+\begin{lstlisting}[language=C]
+FILE *file = fopen("prueba.bin", "rb");
+char buffer[256];
+\end{lstlisting}
+
+
+Ahí asignamos las variables, como explicamos anteriormente.\\ 
+Entonces, ahora, para tomar los datos que el cliente desea buscar, los tomaremos de los que están escritos en el socket del cliente, cuando se explique el archivo cliente.c se entenderá porque reciden estos datos en el socket. Ahora bien, para el manejo de estos datos lo que haremos es pasar estos datos al buffer que creamos antes, así:
+
+
+\begin{lstlisting}[language=C]
+int n = read(socket, buffer, 256);
+\end{lstlisting}
+
+La función read toma 3 parametros, el primero es el socket del que leeremos, el segundo es el destino de los datos leídos y el tercero es la cantidad de datos de que se leerán.\\ 
+Una vez que los datos ya están en el buffer, debemos asignarlos en a unas variables, los datos recibidos son 3, que son sourceid, dstid y hod, que son los que se requieren para la busqueda, entonces para la asignación usaremos sscanf, así:
+
+
+\begin{lstlisting}[language=C]
+sscanf(buffer, "%d,%d,%d", &sourceid,&dstid,&hod);
+\end{lstlisting}
+
+Lo que hacemos ahí es "escanear" los datos del buffer, darles un formato y enviarlos a una dirección de memoria, aquí está la declaración de las variables antes mencionadas:
+
+\begin{lstlisting}[language=C]
+int hod,dstid,sourceid;
+\end{lstlisting}
+
+Ahora que tenemos los datos a buscar en las variables deseadas, empezaremos la busqueda por medio de un while que tenga como parametro fread, que como sabemos, retorna un valor falso o verdadero, nos sirve para que el while se rompa una vez que el archivo ya ha sido recorrido por completo y además nos sirve para guardar los datos en data, que es la instancia de la estructura TravelData, este es el while:
+Primero vemos la estructura TravelData, en una instancia de esta estructura grabaremos los datos obtenidos con fread
+\begin{lstlisting}[language=C]
+typedef struct {
+  int sourceid;
+  int dstid;
+  int hod;
+  float mean_travel_time;
+} TravelData;
+\end{lstlisting}
+
+
+\begin{lstlisting}[language=C]
+while (fread(&data, sizeof(data), 1, file)){
+  if(data.hod == hod && data.dstid == dstid && data.sourceid == sourceid ){
+    mean_travel_time = data.mean_travel_time;
+    break;
+  }else{
+    mean_travel_time = -1;
+  }
+}\end{lstlisting}
+
+Lo que hace el while es asignar cada linea del archivo de busqueda y la coloca en una estructura, entonces luego en el if se hace la comparación de cada atributo de la instancia data con las variables otorgó el cliente por medio del socket si se encuentra entonces la variable mean\_travel\_time se modifica para que sea igual al atributo mean\_travel\_time de la instancia que cumplió con las condiciones, si no se encuentra entonces mean\_travel\_time toma el valor de -1.\\ 
+Ahora vamos con otro paso, una vez que tenemos mean\_travel\_time queremos enviarla de vuelta al socket del cliente, entonces haremos lo inverso a lo que hicimos arriba, vamos a escribir el valor de la variable en el socket, no sin antes colocar todo el socket en 0, para evitar que los valores que traía dañen nuestra información, usamos bzero() para esto, luego lo que hacemos es usar sprintf() y por ultimo usamos write para escribir desde el buffer hacia el socket, así:
+
+
+\begin{lstlisting}[language=C]
+bzero(buffer, 256);
+sprintf(buffer, "%f", mean_travel_time);
+n = write(socket, buffer, strlen(buffer));
+\end{lstlisting}
+
+bzero toma 2 parametros, el lugar donde vamos a escribir los 0 y luego la cantidad de 0's que queremos crear, sprintf toma 3 parametros, primero el lugar donde vamos a colocar los datos, luego el formato y por ultimo la variable; write toma 3 que son los mismos que se vieron en la función read, explicada más arriba.\\ 
+Y listo, con esto habremos terminado nuestra tarea en el servidor, ahora vamos con el cliente.
+
+\section{Elaboración del cliente}
+
+Primero haremos las peticiones al cliente, le preguntaremos que desea buscar, la explicación de esto no es fundamental para nuestros objetivos, por lo tanto no se hará.\\ 
+El esquema que usaremos ahora será el siguiente:\\ 
+1. Crearemos un socket.\\ 
+2. Crearemos una estructura de tipo hostent y otra sockadrr\_in\\ 
+3. Enviamos la petición de conectar al servidor.\\ 
+
+Estas son las variables que usaremos:
+
+\begin{lstlisting}[language=C]
+int socketfd;
+struct sockaddr_in server_direccion;
+struct hostent *server;
+char buffer[256];
+\end{lstlisting}
+
+Vamos con lo primero, la creación del socket es igual que en el servidor, luego la parte importante es conectarnos al servidor, esto lo lograremos con dos funciones, gethostbyname y connect, entonces, gethostbyname tomará como parametro la dirección que el usuario le pasará como argumento al iniciar el programa, buscará esa dirección y de existir se podrá acceder a sus atributos, puesto que es una estructura, entiendase:
+
+\begin{lstlisting}[language=C]
+server = gethostbyname(argv[1]);
+\end{lstlisting}
+
+Una vez que tenemos esto, podremos acceder a la información de server y la copiaremos en server\_direccion, lo importante acá es copiar la dirección, de esta forma:
+
+\begin{lstlisting}[language=C]
+bcopy((char *) server->h_addr, (char *) &server_direccion.sin_addr.s_addr, server->h_length);
+\end{lstlisting}
+
+bcopy toma 3 parametros, el primero es lo que va a copiar y lo segundo es a donde lo copiará, entonces así se entiende que toma la dirección de server, que es server->h\_addr y la envia a sin\_addr.s\_addr, es importante tomar en cuenta que primero casteamos convertir en punteros estas direcciones de memoria y así modificar sus valores.
+El esquema de server\_direccion se ve así:
+
+\begin{lstlisting}[language=C]
+server_direccion.sin_family = AF_INET;
+
+bcopy((char *) server->h_addr, (char *) &server_direccion.sin_addr.s_addr, server->h_length);
+
+server_direccion.sin_port = htons(numero_puerto);
+
+\end{lstlisting}
+
+Luego haremos la mejor parte, la conexión con el servidor, esto gracias a la función connect, así:
+
+
+\begin{lstlisting}[language=C]
+connect(socketfd, (struct sockaddr *)&server_direccion, sizeof(server_direccion)
+\end{lstlisting}
+
+Esto sigue los mismos parametros que la función accept que vimos en la explicación del servidor.\\ 
+Y ahora de la misma manera que en el servidor usaremos el buffer que creamos arriba para escribir los datos que queremos y luego recibirlos, así:
+
+\begin{lstlisting}[language=C]
+sprintf(buffer, "%d,%d,%d", origin, destination, hod);
+int n = write(socketfd, buffer, strlen(buffer));
+\end{lstlisting}
+
+Ya vimos el funcionamiento de estas 2 funciones anteriormente, entonces, en esas líneas de codigo enviamos los datos, luego cuando ya se hizo la busqueda en el servidor hacemos esto para extraer la información:
+
+
+\begin{lstlisting}[language=C]
+bzero(buffer, 256);
+n = read(socketfd, buffer, 255);
+float result;
+sscanf(buffer, "%f", &result);
+\end{lstlisting}
+
+Entonces, dejamos en 0, luego leemos del socket y escribimos al buffer, luego escaneamos del buffer y pasamos el resultado a la variable result, ya luego podremos impimir en pantalla.\\ 
+Y con esto terminamos la explicación de nuestro programa.
+
+\section{Diagrama de flujo}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.5\textwidth]{/home/joel_ostos/Descargas/prueba.png}
+\caption{Diagrama de flujo.}
+:\end{figure}
+
+\section{Diagrama de bloques}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.5\textwidth]{/home/joel_ostos/Descargas/prueba2.png}
+\caption{Diagrama de bloques.}
+:\end{figure}
+
+{\bf References:}
+List and number all bibliographical references at the end of the
+paper. The references can be numbered in alphabetic order or in
+order of appearance in the document. When referring to them in
+the text, type the corresponding reference number in square
+brackets as shown at the end of this sentence \cite{C2}. An
+additional page is allowed, but must contain only references to the prior literature and figures.
+
+% References should be produced using the bibtex program from suitable
+% BiBTeX files (here: strings, refs, manuals). The IEEEbib.bst bibliography
+% style file from IEEE produces unsorted bibliography list.
+% -------------------------------------------------------------------------
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\end{document}
+
+
