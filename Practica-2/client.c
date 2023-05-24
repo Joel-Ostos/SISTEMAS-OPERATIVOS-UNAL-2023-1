@@ -10,7 +10,6 @@
 int main(int argc, char *argv[]){
   int origin, destination, hod;
   printf("Bienvenido\n");
-
   while (1) {
     printf("1. Ingresar origen\n");
     printf("2. Ingresar destino\n");
