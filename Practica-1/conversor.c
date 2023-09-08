@@ -9,8 +9,8 @@ typedef struct {
 } TravelData;
 
 int main() {
-  FILE *csv_file = fopen("prueba.csv", "r");
-  FILE *bin_file = fopen("prueba.bin", "wb");
+  FILE* csv_file = fopen("prueba.csv", "r");
+  FILE* bin_file = fopen("prueba.bin", "wb");
   char line[256];
 
   // Saltar la línea de encabezado si es necesario

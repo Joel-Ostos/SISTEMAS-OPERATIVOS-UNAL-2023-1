@@ -11,7 +11,7 @@ typedef struct {
     double resultado;
 } argumento_t;
 
-void *leibniz(void *arg){
+void* leibniz(void *arg){
     argumento_t *argumentos = (argumento_t *)arg;
     long iteraciones = argumentos->iteraciones;
     long inicio = argumentos->inicio;
